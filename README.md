@@ -1,75 +1,85 @@
 # Wild Week - Cursor-Driven Material Spotlight
 
-A creative WebGL experience built with **Three.js** and **Vite**, featuring an interactive, cursor-driven spotlight effect on a 3D model. As the user moves their cursor over the canvas, a smooth spotlight follows the cursor, dynamically adjusting the material's roughness and diffuse color via custom GLSL shaders to reveal the underlying model.
+A high-fidelity WebGL experience built with **Three.js** and **Vite**, featuring an interactive, cursor-driven spotlight effect on a highly detailed 3D scan. As you move your cursor, a dynamic "spotlight" follows, altering the material properties in real-time through custom GLSL shader injection.
+
+![Project Preview](https://raw.githubusercontent.com/Thakuma07/WildWeek-WEBGLAnimation/main/preview.png) *(Note: Placeholder for actual preview image)*
 
 ## ✨ Features
 
-- **Three.js Integration:** Implements robust 3D rendering with a carefully tuned environment map (`RoomEnvironment`) and ACESFilmic Tone Mapping.
-- **GLTF Model Loading:** Seamlessly loads and displays a GLTF/GLB model (`model.glb`).
-- **Custom GLSL Shaders:** Overrides the default Three.js materials using `onBeforeCompile` to inject custom vertex and fragment shaders.
-- **Interactive Cursor Masking:** Casts a ray from the camera to an invisible mathematical plane, finding exact cursor intersection points to smoothly animate a visual "spotlight" using linear interpolation (lerp).
-- **Vite Setup:** Lightning-fast HMR and optimized build setup with Vite. Native support for importing `.glsl` files natively via the `?raw` suffix.
+- **High-Performance 3D Rendering**: Utilizes Three.js with ACESFilmic Tone Mapping and `RoomEnvironment` for realistic material response.
+- **Dynamic GLSL Shaders**: Custom shader injection using `onBeforeCompile`, overriding standard materials to create localized visual effects.
+- **Auto-Scaling Spotlight**: The spotlight radius and softness automatically adjust based on the loaded model's bounding box, ensuring consistent interaction across different assets.
+- **Interactive Masking**: Uses raycasting against a mathematical plane to track the cursor in 3D space with smooth linear interpolation (lerp).
+- **Optimized for Vite**: Leverage lightning-fast HMR and native GLSL module imports (`?raw`).
 
 ## 📁 Project Structure
 
 ```
 .
-├── shaders/                   # Custom GLSL shader injection files
-│   ├── vertexPars.glsl        # Vertex shader parameters
-│   ├── vertexMain.glsl        # Vertex shader main logic
-│   ├── fragmentPars.glsl      # Fragment shader parameters
-│   └── fragmentMain.glsl      # Fragment shader main logic
-├── index.html                 # Entry point HTML
-├── script.js                  # Main Three.js application logic
-├── styles.css                 # Base styling for full-screen rendering
-├── package.json               # NPM dependencies and Vite scripts
-└── README.md                  # Project documentation
+├── model/                     # 3D assets (GLB/GLTF)
+│   └── discobolus_the_discus_thrower.glb
+├── shaders/                   # GLSL shader chunks
+│   ├── vertexPars.glsl        # Varying definitions
+│   ├── vertexMain.glsl        # World position calculation
+│   ├── fragmentPars.glsl      # Uniforms and parameters
+│   └── fragmentMain.glsl      # Masking and material logic
+├── index.html                 # Main entry point
+├── script.js                  # Application core
+├── styles.css                 # Responsive layout
+├── vite.config.js             # Asset handling configuration
+└── package.json               # Dependencies and scripts
 ```
 
 ## 🛠️ Technologies Used
 
-- **HTML5 & CSS3**
-- **JavaScript (ES6 Modules)**
-- **Three.js** (WebGL Library)
-- **Vite** (Build Tool and Development Server)
+- **Three.js**: WebGL framework for 3D graphics.
+- **GLSL**: Custom shader programming for material effects.
+- **Vite**: Modern build tool for fast development.
+- **Node.js**: Dependency management and build environment.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-Ensure you have [Node.js](https://nodejs.org/) installed on your machine.
+You will need [Node.js](https://nodejs.org/) installed.
 
 ### Installation
 
-1. Clone or download this repository.
-2. Open your terminal in the project directory.
-3. Install the dependencies:
+1. Clone the repository.
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-### Running the Development Server
+### Development
 
-Start the local Vite development server:
-
+Run the local development server:
 ```bash
 npm run dev
 ```
 
-The terminal will output a local URL (usually `http://localhost:5173/`). Open that link in your browser to interact with the experience.
+### Production Build
 
-### Building for Production
-
-To create an optimized production build:
-
+Build for deployment:
 ```bash
 npm run build
 ```
-This will generate a `dist` folder containing the minified and optimized assets.
 
-## 🎨 How it Works
+## 🎨 Technical Overview
 
-1. **Raycasting**: A mathematical `THREE.Plane` is established on the Z-axis. As the mouse moves, a `THREE.Raycaster` projects from the camera and intersects the plane to retrieve accurate 3D world coordinates.
-2. **Shader Injection**: The loaded model's materials are hooked using `onBeforeCompile`. Custom uniforms (`uHitPoint`, `uActive`, `uRadius`, `uSoftness`) are passed into the shaders.
-3. **Smoothstep Masking**: The fragment shader uses the `distance` between the current pixel (`vWPos`) and the cursor's hit point (`uHitPoint`), creating a mask with `smoothstep`.
-4. **Material Alteration**: Where the mask is active, the roughness decreases (making it shinier) and the diffuse color brightens, achieving the localized spotlight effect.
+1. **Model Centering**: Automatically centers any loaded GLB model at the origin `(0,0,0)` and fits the camera to its size.
+2. **Shader Hooks**: Replaces standard Three.js shader chunks (`#include <metalnessmap_fragment>`, etc.) with custom logic.
+3. **Smoothstep Mask**: Calculates a mask based on the distance from the world-space cursor position:
+   ```glsl
+   float reveal = 1.0 - smoothstep(uRadius, uRadius + uSoftness, d);
+   ```
+4. **Material Modulation**: Dynamically adjusts `roughnessFactor` and `diffuseColor` within the masked area to create the localized spotlight effect.
+
+## 📜 Credits
+
+- **3D Model**: [Discobolus the Discus Thrower](https://skfb.ly/VO9W)
+- **Model Editor**: [Model Viewer Editor](https://modelviewer.dev/editor/)
+- **Inspiration**: [Wild.Plus - Athens 2026](https://week.wild.plus/athens-26)
+
+---
+Developed by [Thakuma07](https://github.com/Thakuma07)
