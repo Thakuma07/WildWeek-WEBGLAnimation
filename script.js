@@ -5,6 +5,7 @@ import vertexPars from "./shaders/vertexPars.glsl?raw";
 import vertexMain from "./shaders/vertexMain.glsl?raw";
 import fragmentPars from "./shaders/fragmentPars.glsl?raw";
 import fragmentMain from "./shaders/fragmentMain.glsl?raw";
+import modelUrl from "./model/discobolus_the_discus_thrower.glb?url";
 
 const spotlight = document.querySelector(".spotlight");
 const scene = new THREE.Scene();
@@ -12,7 +13,7 @@ const camera = new THREE.PerspectiveCamera(
   45,
   spotlight.clientWidth / spotlight.clientHeight,
   0.1,
-  100,
+  1000,
 );
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -28,6 +29,12 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment()).texture;
 pmrem.dispose();
 
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+directionalLight.position.set(5, 5, 5);
+scene.add(directionalLight);
+
 const config = { radius: 0.15, softness: 0.35, lerp: 0.05 };
 const shaders = [];
 const uHit = new THREE.Vector3(0, 100, 0);
@@ -39,14 +46,18 @@ const planeHit = new THREE.Vector3();
 let uActive = 0;
 let active = false;
 
-new GLTFLoader().load("/model.glb", (gltf) => {
+new GLTFLoader().load(modelUrl, (gltf) => {
   const model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   model.position.sub(box.getCenter(new THREE.Vector3()));
 
   const size = box.getSize(new THREE.Vector3());
+  const modelScale = Math.max(size.x, size.y, size.z);
+  config.radius = modelScale * 0.12;
+  config.softness = modelScale * 0.02;
+
   const dist =
-    Math.max(size.x, size.y, size.z) /
+    modelScale /
     (2 * Math.tan((camera.fov * Math.PI) / 180 / 2));
   camera.position.set(0, 0, dist * 1.75);
   camera.lookAt(0, 0, 0);
@@ -70,8 +81,8 @@ new GLTFLoader().load("/model.glb", (gltf) => {
     shader.fragmentShader = shader.fragmentShader
     .replace("#include <common>", `#include <common>\n${fragmentPars}`)
       .replace(
-        "#include <roughnessmap_fragment>",
-        `#include <roughnessmap_fragment>\n${fragmentMain}`
+        "#include <metalnessmap_fragment>",
+        `#include <metalnessmap_fragment>\n${fragmentMain}`
       );
 
     shaders.push(shader);
@@ -79,7 +90,9 @@ new GLTFLoader().load("/model.glb", (gltf) => {
   node.material.needsUpdate = true;
 });
 
-scene.add(model);
+  scene.add(model);
+}, undefined, (error) => {
+  console.error("Error loading model:", error);
 });
 
 spotlight.addEventListener("mousemove", (e) => {
@@ -106,6 +119,8 @@ function animate() {
   for (const s of shaders) {
     s.uniforms.uHitPoint.value.copy(uHit);
     s.uniforms.uActive.value = uActive;
+    s.uniforms.uRadius.value = config.radius;
+    s.uniforms.uSoftness.value = config.softness;
   }
 
   renderer.render(scene, camera);
