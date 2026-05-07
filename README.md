@@ -2,7 +2,7 @@
 
 A high-fidelity WebGL experience built with **Three.js** and **Vite**, featuring an interactive, cursor-driven spotlight effect on a highly detailed 3D scan. As you move your cursor, a dynamic "spotlight" follows, altering the material properties in real-time through custom GLSL shader injection.
 
-![Project Preview](https://raw.githubusercontent.com/Thakuma07/WildWeek-WEBGLAnimation/main/preview.png) *(Note: Placeholder for actual preview image)*
+<img width="1571" height="978" alt="Screenshot 2026-05-07 164204" src="https://github.com/user-attachments/assets/21fdd617-bd2b-4b04-abc5-5a28036e552d" />
 
 ## ✨ Features
 
